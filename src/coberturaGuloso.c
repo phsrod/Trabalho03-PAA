@@ -441,7 +441,7 @@ void salvar_csv(Metricas *metricas_pequeno, Metricas *metricas_medio, Metricas *
     FILE *arquivo = NULL;
     char caminho[MAX_PATH];
 
-    snprintf(caminho, MAX_PATH, "../results/guloso/metricas_guloso.csv");
+    snprintf(caminho, MAX_PATH, "../results/guloso/file/metricas_guloso.csv");
 
     arquivo = fopen(caminho, "w");
     if (arquivo == NULL)

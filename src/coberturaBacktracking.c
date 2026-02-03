@@ -444,7 +444,7 @@ void salvar_csv_backtracking(MetricasBacktracking *metricas_pequeno, MetricasBac
     FILE *arquivo = NULL;
     char caminho[MAX_PATH];
 
-    snprintf(caminho, MAX_PATH, "../results/backtracking/metricas_backtracking.csv");
+    snprintf(caminho, MAX_PATH, "../results/backtracking/file/metricas_backtracking.csv");
 
     arquivo = fopen(caminho, "w");
     if (arquivo == NULL)
