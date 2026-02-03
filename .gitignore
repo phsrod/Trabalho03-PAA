@@ -39,6 +39,8 @@
 *.hex
 coberturaBacktracking
 coberturaGuloso
+cb
+cg
 
 # Debug files
 *.dSYM/
