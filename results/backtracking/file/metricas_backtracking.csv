@@ -1,0 +1,4 @@
+cenario,tempo_ms,memoria_kb,qualidade,n_intervalos_solucao,nos_visitados
+pequeno,0.0131,4624,0.7000,3,291
+medio,0.0931,23096,0.6667,4,1796
+grande,0.2206,55592,0.7333,4,4730
