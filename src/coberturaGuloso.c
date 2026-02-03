@@ -138,75 +138,110 @@ int comparar_pontos(const void *a, const void *b)
     return resultado;
 }
 
-void carregar_pontos_aleatorios(Problema *problema, int n_pontos, int min_pos, int max_pos)
-{
-    problema->pontos = (Ponto *)malloc(n_pontos * sizeof(Ponto));
-    if (problema->pontos != NULL)
-    {
-        problema->n_pontos = n_pontos;
-        for (int i = 0; i < n_pontos; i++)
-        {
-            problema->pontos[i].id = i + 1;
-            problema->pontos[i].posicao = min_pos + rand() % (max_pos - min_pos + 1);
-        }
-        qsort(problema->pontos, n_pontos, sizeof(Ponto), comparar_pontos);
-    }
-}
-
-void carregar_intervalos_aleatorios(Problema *problema, int n_intervalos, int min_tamanho, int max_tamanho, int max_pos)
-{
-    problema->intervalos = (Intervalo *)malloc(n_intervalos * sizeof(Intervalo));
-    if (problema->intervalos != NULL)
-    {
-        problema->n_intervalos = n_intervalos;
-        for (int i = 0; i < n_intervalos; i++)
-        {
-            int tamanho = min_tamanho + rand() % (max_tamanho - min_tamanho + 1);
-            int inicio = rand() % (max_pos - tamanho + 1);
-            problema->intervalos[i].inicio = inicio;
-            problema->intervalos[i].fim = inicio + tamanho;
-        }
-        qsort(problema->intervalos, n_intervalos, sizeof(Intervalo), comparar_intervalos);
-    }
-}
-
-// void configurar_cenario_pequeno(Problema *problema)
-// {
-//     srand(42);
-//     carregar_pontos_aleatorios(problema, 20, 0, 100);
-//     carregar_intervalos_aleatorios(problema, 15, 10, 30, 100);
-// }
-
-// void configurar_cenario_medio(Problema *problema)
-// {
-//     srand(43);
-//     carregar_pontos_aleatorios(problema, 100, 0, 500);
-//     carregar_intervalos_aleatorios(problema, 50, 20, 80, 500);
-// }
-
-// void configurar_cenario_grande(Problema *problema)
-// {
-//     srand(44);
-//     carregar_pontos_aleatorios(problema, 500, 0, 1000);
-//     carregar_intervalos_aleatorios(problema, 200, 30, 150, 1000);
-// }
-
+// Cenário PEQUENO - Determinístico
 void configurar_cenario_pequeno(Problema *problema) {
-    srand(42);  // Mesma semente do backtracking
-    carregar_pontos_aleatorios(problema, 8, 0, 50);      // Igual ao backtracking
-    carregar_intervalos_aleatorios(problema, 6, 5, 20, 50); // Igual ao backtracking
+    // 8 pontos fixos
+    problema->n_pontos = 8;
+    problema->pontos = (Ponto *)malloc(8 * sizeof(Ponto));
+    problema->pontos[0] = (Ponto){1, 5};
+    problema->pontos[1] = (Ponto){2, 10};
+    problema->pontos[2] = (Ponto){3, 15};
+    problema->pontos[3] = (Ponto){4, 20};
+    problema->pontos[4] = (Ponto){5, 25};
+    problema->pontos[5] = (Ponto){6, 30};
+    problema->pontos[6] = (Ponto){7, 35};
+    problema->pontos[7] = (Ponto){8, 40};
+    
+    // 10 intervalos fixos que cobrem todos os pontos
+    problema->n_intervalos = 10;
+    problema->intervalos = (Intervalo *)malloc(10 * sizeof(Intervalo));
+    problema->intervalos[0] = (Intervalo){0, 12};
+    problema->intervalos[1] = (Intervalo){8, 22};
+    problema->intervalos[2] = (Intervalo){15, 28};
+    problema->intervalos[3] = (Intervalo){25, 42};
+    problema->intervalos[4] = (Intervalo){5, 18};
+    problema->intervalos[5] = (Intervalo){18, 32};
+    problema->intervalos[6] = (Intervalo){30, 45};
+    problema->intervalos[7] = (Intervalo){3, 15};
+    problema->intervalos[8] = (Intervalo){20, 35};
+    problema->intervalos[9] = (Intervalo){12, 26};
+    
+    qsort(problema->intervalos, problema->n_intervalos, sizeof(Intervalo), comparar_intervalos);
 }
 
+// Cenário MÉDIO - Determinístico
 void configurar_cenario_medio(Problema *problema) {
-    srand(43);  // Mesma semente do backtracking
-    carregar_pontos_aleatorios(problema, 12, 0, 100);    // Igual ao backtracking
-    carregar_intervalos_aleatorios(problema, 10, 10, 30, 100); // Igual ao backtracking
+    // 10 pontos fixos
+    problema->n_pontos = 10;
+    problema->pontos = (Ponto *)malloc(10 * sizeof(Ponto));
+    problema->pontos[0] = (Ponto){1, 8};
+    problema->pontos[1] = (Ponto){2, 16};
+    problema->pontos[2] = (Ponto){3, 24};
+    problema->pontos[3] = (Ponto){4, 32};
+    problema->pontos[4] = (Ponto){5, 40};
+    problema->pontos[5] = (Ponto){6, 48};
+    problema->pontos[6] = (Ponto){7, 56};
+    problema->pontos[7] = (Ponto){8, 64};
+    problema->pontos[8] = (Ponto){9, 72};
+    problema->pontos[9] = (Ponto){10, 80};
+    
+    // 12 intervalos fixos que cobrem todos os pontos
+    problema->n_intervalos = 12;
+    problema->intervalos = (Intervalo *)malloc(12 * sizeof(Intervalo));
+    problema->intervalos[0] = (Intervalo){0, 20};
+    problema->intervalos[1] = (Intervalo){12, 35};
+    problema->intervalos[2] = (Intervalo){25, 45};
+    problema->intervalos[3] = (Intervalo){38, 58};
+    problema->intervalos[4] = (Intervalo){50, 75};
+    problema->intervalos[5] = (Intervalo){65, 85};
+    problema->intervalos[6] = (Intervalo){5, 28};
+    problema->intervalos[7] = (Intervalo){20, 42};
+    problema->intervalos[8] = (Intervalo){35, 55};
+    problema->intervalos[9] = (Intervalo){48, 68};
+    problema->intervalos[10] = (Intervalo){60, 82};
+    problema->intervalos[11] = (Intervalo){15, 38};
+    
+    qsort(problema->intervalos, problema->n_intervalos, sizeof(Intervalo), comparar_intervalos);
 }
 
+// Cenário GRANDE - Determinístico
 void configurar_cenario_grande(Problema *problema) {
-    srand(44);  // Mesma semente do backtracking
-    carregar_pontos_aleatorios(problema, 15, 0, 150);    // Igual ao backtracking
-    carregar_intervalos_aleatorios(problema, 12, 15, 40, 150); // Igual ao backtracking
+    // 12 pontos fixos
+    problema->n_pontos = 12;
+    problema->pontos = (Ponto *)malloc(12 * sizeof(Ponto));
+    problema->pontos[0] = (Ponto){1, 5};
+    problema->pontos[1] = (Ponto){2, 12};
+    problema->pontos[2] = (Ponto){3, 18};
+    problema->pontos[3] = (Ponto){4, 25};
+    problema->pontos[4] = (Ponto){5, 32};
+    problema->pontos[5] = (Ponto){6, 38};
+    problema->pontos[6] = (Ponto){7, 45};
+    problema->pontos[7] = (Ponto){8, 52};
+    problema->pontos[8] = (Ponto){9, 58};
+    problema->pontos[9] = (Ponto){10, 65};
+    problema->pontos[10] = (Ponto){11, 72};
+    problema->pontos[11] = (Ponto){12, 80};
+    
+    // 15 intervalos fixos que cobrem todos os pontos
+    problema->n_intervalos = 15;
+    problema->intervalos = (Intervalo *)malloc(15 * sizeof(Intervalo));
+    problema->intervalos[0] = (Intervalo){0, 15};
+    problema->intervalos[1] = (Intervalo){10, 28};
+    problema->intervalos[2] = (Intervalo){20, 35};
+    problema->intervalos[3] = (Intervalo){30, 48};
+    problema->intervalos[4] = (Intervalo){40, 58};
+    problema->intervalos[5] = (Intervalo){50, 68};
+    problema->intervalos[6] = (Intervalo){60, 85};
+    problema->intervalos[7] = (Intervalo){5, 20};
+    problema->intervalos[8] = (Intervalo){15, 32};
+    problema->intervalos[9] = (Intervalo){25, 42};
+    problema->intervalos[10] = (Intervalo){35, 52};
+    problema->intervalos[11] = (Intervalo){45, 62};
+    problema->intervalos[12] = (Intervalo){55, 75};
+    problema->intervalos[13] = (Intervalo){70, 85};
+    problema->intervalos[14] = (Intervalo){8, 26};
+    
+    qsort(problema->intervalos, problema->n_intervalos, sizeof(Intervalo), comparar_intervalos);
 }
 
 int ponto_coberto_por_intervalo(Ponto ponto, Intervalo intervalo)
@@ -516,9 +551,9 @@ void exibir_menu() {
     printf("\n=== PROBLEMA DA COBERTURA DE PONTOS COM INTERVALOS ===\n");
     printf("ALGORITMO: GULOSO\n");
     printf("\nMenu de opcoes:\n");
-    printf("1. Executar cenario PEQUENO (8 pontos, 6 intervalos)\n");
-    printf("2. Executar cenario MEDIO (12 pontos, 10 intervalos)\n");
-    printf("3. Executar cenario GRANDE (15 pontos, 12 intervalos)\n");
+    printf("1. Executar cenario PEQUENO (8 pontos, 10 intervalos)\n");
+    printf("2. Executar cenario MEDIO (10 pontos, 12 intervalos)\n");
+    printf("3. Executar cenario GRANDE (12 pontos, 15 intervalos)\n");
     printf("4. Executar TODOS os cenarios e gerar CSV\n");
     printf("5. Sair\n");
     printf("\nEscolha uma opcao: ");
