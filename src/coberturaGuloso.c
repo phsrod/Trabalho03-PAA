@@ -9,41 +9,113 @@
 #define MAX_INTERVALOS 1000
 #define MAX_PATH 1024
 
+/**
+ * @struct Intervalo
+ * @brief Representa um intervalo fechado na reta numérica.
+ *
+ * Esta estrutura é utilizada pelo algoritmo guloso para modelar
+ * intervalos que podem cobrir pontos em uma dimensão linear.
+ * Um ponto é considerado coberto se sua posição estiver entre
+ * o início e o fim do intervalo (inclusive).
+ *
+ * No problema da cobertura de pontos, o objetivo é selecionar
+ * um subconjunto mínimo desses intervalos capaz de cobrir
+ * todos os pontos definidos.
+ */
 typedef struct
 {
-    int inicio;
-    int fim;
+    int inicio; /**< Limite inicial do intervalo (inclusive). */
+    int fim; /**< Limite final do intervalo (inclusive). */
 } Intervalo;
 
+/**
+ * @struct Ponto
+ * @brief Representa um ponto na reta numérica a ser coberto por intervalos.
+ *
+ * Cada ponto possui um identificador único e uma posição inteira
+ * na reta numérica. No problema da cobertura de pontos, um ponto
+ * é considerado coberto se existir ao menos um intervalo cujo
+ * início e fim englobem sua posição.
+ *
+ * Essa estrutura é utilizada pelo algoritmo guloso para verificar
+ * a cobertura dos pontos e auxiliar na escolha dos intervalos
+ * mais adequados durante a execução do algoritmo.
+ */
 typedef struct
 {
-    int id;
-    int posicao;
+    int id; /**< Identificador único do ponto. */
+    int posicao; /**< Posição do ponto na reta numérica. */
 } Ponto;
 
+/**
+ * @struct Problema
+ * @brief Estrutura que encapsula todos os dados e métricas do problema
+ *        de cobertura de pontos com intervalos utilizando algoritmo guloso.
+ *
+ * Esta estrutura armazena:
+ * - Os pontos que devem ser cobertos;
+ * - Os intervalos disponíveis para realizar a cobertura;
+ * - O estado atual da cobertura durante a execução do algoritmo guloso;
+ * - A solução construída incrementalmente;
+ * - As métricas de desempenho obtidas ao final da execução.
+ *
+ * No algoritmo guloso, os intervalos são selecionados iterativamente
+ * com base em um critério de escolha (por exemplo, o intervalo que
+ * cobre o maior número de pontos ainda não cobertos), até que todos
+ * os pontos estejam cobertos ou não haja mais intervalos viáveis.
+ */
 typedef struct
 {
-    Intervalo *intervalos;
-    int n_intervalos;
-    Ponto *pontos;
-    int n_pontos;
-    int *pontos_cobertos;
-    int n_pontos_cobertos;
-    Intervalo *solucao;
-    int n_solucao;
-    double tempo_execucao;
-    long memoria_utilizada;
-    double qualidade;
+    Intervalo *intervalos; /**< Vetor de intervalos disponíveis para cobertura. */
+    int n_intervalos; /**< Quantidade total de intervalos disponíveis. */
+    Ponto *pontos; /**< Vetor de pontos que devem ser cobertos. */
+    int n_pontos; /**< Quantidade total de pontos. */
+    int *pontos_cobertos; /**< Vetor auxiliar que indica se cada ponto já foi coberto (0 ou 1). */
+    int n_pontos_cobertos; /**< Número total de pontos já cobertos durante a execução. */
+    Intervalo *solucao; /**< Vetor de intervalos escolhidos pelo algoritmo guloso. */
+    int n_solucao; /**< Quantidade de intervalos presentes na solução gulosa. */
+    double tempo_execucao; /**< Tempo total de execução do algoritmo, em milissegundos. */
+    long memoria_utilizada; /**< Memória utilizada pelo algoritmo, em kilobytes. */
+    double qualidade; /**< Métrica de qualidade da solução obtida pelo algoritmo guloso. */
 } Problema;
 
+/**
+ * @struct Metricas
+ * @brief Estrutura que armazena as métricas de desempenho do algoritmo guloso.
+ *
+ * Esta estrutura é utilizada para registrar e exportar os resultados
+ * obtidos após a execução do algoritmo guloso no problema de cobertura
+ * de pontos com intervalos.
+ *
+ * As métricas permitem avaliar:
+ * - O desempenho temporal do algoritmo;
+ * - O consumo de memória;
+ * - A qualidade da solução encontrada;
+ * - O tamanho da solução gerada.
+ *
+ * Esses dados são úteis para análises comparativas com outros algoritmos,
+ * como o backtracking.
+ */
 typedef struct
 {
-    double tempo;
-    long memoria;
-    double qualidade;
-    int n_solucao;
+    double tempo; /**< Tempo total de execução do algoritmo, em milissegundos. */
+    long memoria; /**< Memória utilizada durante a execução, em kilobytes. */
+    double qualidade; /**< Qualidade da solução gulosa obtida. */
+    int n_solucao; /**< Número de intervalos selecionados na solução final. */
 } Metricas;
 
+/**
+ * @brief Inicializa a estrutura do problema para o algoritmo guloso.
+ *
+ * Esta função prepara a estrutura `Problema` para uso, inicializando
+ * todos os ponteiros como NULL e zerando os contadores e métricas.
+ *
+ * Ela deve ser chamada antes de configurar qualquer cenário ou executar
+ * o algoritmo guloso, garantindo que o estado inicial do problema seja
+ * consistente e evitando acessos indevidos à memória.
+ *
+ * @param problema Ponteiro para a estrutura `Problema` a ser inicializada.
+ */
 void inicializar_problema(Problema *problema)
 {
     problema->intervalos = NULL;
@@ -59,6 +131,23 @@ void inicializar_problema(Problema *problema)
     problema->qualidade = 0.0;
 }
 
+/**
+ * @brief Libera toda a memória alocada dinamicamente pelo problema guloso.
+ *
+ * Esta função é responsável por desalocar todos os vetores associados
+ * à estrutura `Problema`, incluindo intervalos, pontos, controle de
+ * cobertura e solução construída pelo algoritmo guloso.
+ *
+ * Após a liberação, todos os ponteiros são definidos como NULL para
+ * evitar ponteiros pendentes (dangling pointers) e possíveis acessos
+ * inválidos à memória.
+ *
+ * Essa função deve ser chamada ao final da execução de cada cenário
+ * para garantir a correta liberação de recursos.
+ *
+ * @param problema Ponteiro para a estrutura `Problema` cujos recursos
+ *        serão liberados.
+ */
 void liberar_problema(Problema *problema)
 {
     if (problema->intervalos != NULL)
@@ -83,6 +172,30 @@ void liberar_problema(Problema *problema)
     }
 }
 
+/**
+ * @brief Função de comparação entre intervalos para ordenação no algoritmo guloso.
+ *
+ * Esta função define o critério de ordenação dos intervalos utilizado
+ * pelo algoritmo guloso. Os intervalos são ordenados primeiramente
+ * pelo valor de término (`fim`) em ordem crescente.
+ *
+ * Em caso de empate no valor de término, o desempate é feito pelo
+ * valor de início (`inicio`), também em ordem crescente.
+ *
+ * Esse critério é fundamental para a estratégia gulosa adotada,
+ * pois prioriza intervalos que terminam mais cedo, aumentando a
+ * chance de cobrir o maior número de pontos com menos intervalos.
+ *
+ * A função é projetada para ser utilizada com a função `qsort`.
+ *
+ * @param a Ponteiro para o primeiro intervalo a ser comparado.
+ * @param b Ponteiro para o segundo intervalo a ser comparado.
+ *
+ * @return Valor negativo se `a` deve vir antes de `b`,
+ *         valor positivo se `a` deve vir depois de `b`,
+ *         ou zero se ambos forem considerados equivalentes
+ *         segundo o critério de ordenação.
+ */
 int comparar_intervalos(const void *a, const void *b)
 {
     int resultado = 0;
@@ -116,6 +229,19 @@ int comparar_intervalos(const void *a, const void *b)
     return resultado;
 }
 
+/**
+ * @brief Compara dois pontos com base na posição no eixo.
+ *
+ * Ordena os pontos em ordem crescente de posição. Essa ordenação
+ * facilita a identificação do próximo ponto ainda não coberto
+ * durante a execução do algoritmo guloso.
+ *
+ * Função compatível com `qsort`.
+ *
+ * @param a Ponteiro para o primeiro ponto.
+ * @param b Ponteiro para o segundo ponto.
+ * @return Valor negativo, positivo ou zero conforme a ordem relativa.
+ */
 int comparar_pontos(const void *a, const void *b)
 {
     int resultado = 0;
@@ -138,7 +264,17 @@ int comparar_pontos(const void *a, const void *b)
     return resultado;
 }
 
-// Cenário PEQUENO - Determinístico
+/**
+ * @brief Configura o cenário pequeno do problema de cobertura de pontos.
+ *
+ * Inicializa um conjunto determinístico de 8 pontos e 10 intervalos,
+ * garantindo que todos os pontos possam ser cobertos.
+ *
+ * Os intervalos são ordenados conforme o critério guloso antes da
+ * execução do algoritmo.
+ *
+ * @param problema Ponteiro para a estrutura do problema.
+ */
 void configurar_cenario_pequeno(Problema *problema) {
     // 8 pontos fixos
     problema->n_pontos = 8;
@@ -169,7 +305,16 @@ void configurar_cenario_pequeno(Problema *problema) {
     qsort(problema->intervalos, problema->n_intervalos, sizeof(Intervalo), comparar_intervalos);
 }
 
-// Cenário MÉDIO - Determinístico
+/**
+ * @brief Configura o cenário médio do problema de cobertura de pontos.
+ *
+ * Inicializa um conjunto determinístico de 10 pontos e 12 intervalos,
+ * com maior complexidade em relação ao cenário pequeno.
+ *
+ * Os intervalos são ordenados de acordo com o critério guloso.
+ *
+ * @param problema Ponteiro para a estrutura do problema.
+ */
 void configurar_cenario_medio(Problema *problema) {
     // 10 pontos fixos
     problema->n_pontos = 10;
@@ -204,7 +349,17 @@ void configurar_cenario_medio(Problema *problema) {
     qsort(problema->intervalos, problema->n_intervalos, sizeof(Intervalo), comparar_intervalos);
 }
 
-// Cenário GRANDE - Determinístico
+/**
+ * @brief Configura o cenário grande do problema de cobertura de pontos.
+ *
+ * Inicializa um conjunto determinístico de 12 pontos e 15 intervalos,
+ * representando o cenário mais complexo avaliado.
+ *
+ * Os intervalos são ordenados previamente para aplicação do algoritmo
+ * guloso.
+ *
+ * @param problema Ponteiro para a estrutura do problema.
+ */
 void configurar_cenario_grande(Problema *problema) {
     // 12 pontos fixos
     problema->n_pontos = 12;
@@ -244,6 +399,16 @@ void configurar_cenario_grande(Problema *problema) {
     qsort(problema->intervalos, problema->n_intervalos, sizeof(Intervalo), comparar_intervalos);
 }
 
+/**
+ * @brief Verifica se um ponto está coberto por um intervalo.
+ *
+ * Determina se a posição do ponto está dentro dos limites do intervalo,
+ * incluindo as extremidades.
+ *
+ * @param ponto Estrutura representando o ponto.
+ * @param intervalo Estrutura representando o intervalo.
+ * @return 1 se o ponto estiver coberto, 0 caso contrário.
+ */
 int ponto_coberto_por_intervalo(Ponto ponto, Intervalo intervalo)
 {
     int resultado = 0;
@@ -258,6 +423,18 @@ int ponto_coberto_por_intervalo(Ponto ponto, Intervalo intervalo)
     return resultado;
 }
 
+/**
+ * @brief Marca os pontos cobertos por um determinado intervalo.
+ *
+ * Atualiza o vetor de controle de cobertura, marcando como cobertos
+ * todos os pontos ainda não cobertos que pertencem ao intervalo
+ * selecionado.
+ *
+ * Também atualiza o contador total de pontos cobertos.
+ *
+ * @param problema Ponteiro para a estrutura do problema.
+ * @param intervalo Intervalo selecionado pelo algoritmo guloso.
+ */
 void marcar_pontos_cobertos(Problema *problema, Intervalo intervalo)
 {
     for (int i = 0; i < problema->n_pontos; i++)
@@ -273,6 +450,14 @@ void marcar_pontos_cobertos(Problema *problema, Intervalo intervalo)
     }
 }
 
+/**
+ * @brief Verifica se todos os pontos do problema já foram cobertos.
+ *
+ * Compara o número de pontos cobertos com o total de pontos existentes.
+ *
+ * @param problema Ponteiro para a estrutura do problema.
+ * @return 1 se todos os pontos estiverem cobertos, 0 caso contrário.
+ */
 int todos_pontos_cobertos(Problema *problema)
 {
     int resultado = 0;
@@ -287,6 +472,15 @@ int todos_pontos_cobertos(Problema *problema)
     return resultado;
 }
 
+/**
+ * @brief Obtém o índice do próximo ponto ainda não coberto.
+ *
+ * Percorre o vetor de pontos cobertos e retorna o índice do primeiro
+ * ponto que ainda não foi coberto por nenhum intervalo selecionado.
+ *
+ * @param problema Ponteiro para a estrutura do problema.
+ * @return Índice do ponto não coberto ou -1 se todos estiverem cobertos.
+ */
 int obter_proximo_ponto_nao_coberto(Problema *problema)
 {
     int resultado = -1;
@@ -301,6 +495,23 @@ int obter_proximo_ponto_nao_coberto(Problema *problema)
     return resultado;
 }
 
+/**
+ * @brief Seleciona o melhor intervalo segundo a estratégia gulosa.
+ *
+ * A função avalia todos os intervalos que cobrem o ponto atualmente
+ * não coberto e seleciona aquele que cobre o maior número de pontos
+ * ainda descobertos.
+ *
+ * Em caso de empate, o intervalo de menor tamanho é escolhido como
+ * critério de desempate.
+ *
+ * Essa estratégia busca maximizar o ganho local a cada escolha,
+ * característica fundamental do algoritmo guloso.
+ *
+ * @param problema Ponteiro para a estrutura do problema.
+ * @param indice_ponto Índice do ponto atualmente não coberto.
+ * @return Índice do melhor intervalo ou -1 se nenhum for adequado.
+ */
 int encontrar_melhor_intervalo(Problema *problema, int indice_ponto)
 {
     int melhor_intervalo = -1;
@@ -352,6 +563,20 @@ int encontrar_melhor_intervalo(Problema *problema, int indice_ponto)
     return melhor_intervalo;
 }
 
+/**
+ * @brief Resolve o problema da cobertura de pontos usando um algoritmo guloso.
+ *
+ * A estratégia gulosa consiste em:
+ * - Selecionar o próximo ponto ainda não coberto
+ * - Escolher o intervalo que cobre esse ponto e se estende o mais longe possível
+ * - Marcar todos os pontos cobertos por esse intervalo
+ *
+ * O processo se repete até que todos os pontos estejam cobertos ou
+ * não seja possível avançar.
+ *
+ * @param problema Ponteiro para a estrutura do problema
+ * @return Estrutura contendo as métricas da execução
+ */
 Metricas resolver_guloso(Problema *problema)
 {
     Metricas metricas;
@@ -443,6 +668,13 @@ Metricas resolver_guloso(Problema *problema)
     return metricas;
 }
 
+/**
+ * @brief Exibe a solução encontrada pelo algoritmo guloso.
+ *
+ * Mostra os intervalos selecionados e os pontos efetivamente cobertos.
+ *
+ * @param problema Ponteiro para a estrutura do problema
+ */
 void exibir_solucao(Problema *problema)
 {
     printf("Solucao encontrada (%d intervalos):\n", problema->n_solucao);
@@ -461,6 +693,14 @@ void exibir_solucao(Problema *problema)
     }
 }
 
+/**
+ * @brief Exibe as métricas do algoritmo guloso.
+ *
+ * Mostra tempo de execução, memória utilizada,
+ * tamanho da solução e qualidade obtida.
+ *
+ * @param problema Ponteiro para a estrutura do problema
+ */
 void exibir_metricas(Problema *problema)
 {
     printf("\n=== METRICAS DO ALGORITMO GULOSO ===\n");
@@ -471,6 +711,16 @@ void exibir_metricas(Problema *problema)
     printf("====================================\n\n");
 }
 
+/**
+ * @brief Salva as métricas dos cenários em um arquivo CSV.
+ *
+ * O arquivo gerado permite a análise comparativa dos cenários
+ * pequeno, médio e grande.
+ *
+ * @param metricas_pequeno Métricas do cenário pequeno
+ * @param metricas_medio   Métricas do cenário médio
+ * @param metricas_grande  Métricas do cenário grande
+ */
 void salvar_csv(Metricas *metricas_pequeno, Metricas *metricas_medio, Metricas *metricas_grande)
 {
     FILE *arquivo = NULL;
@@ -497,6 +747,16 @@ void salvar_csv(Metricas *metricas_pequeno, Metricas *metricas_medio, Metricas *
     printf("Metricas salvas em: %s\n", caminho);
 }
 
+/**
+ * @brief Executa um teste individual do algoritmo guloso.
+ *
+ * Resolve o problema para um cenário específico,
+ * exibindo a solução e suas métricas.
+ *
+ * @param problema Ponteiro para a estrutura do problema
+ * @param nome_cenario Nome identificador do cenário
+ * @param metricas Ponteiro para a estrutura de métricas
+ */
 void executar_teste(Problema *problema, const char *nome_cenario, Metricas *metricas)
 {
     printf("\n=== EXECUTANDO CENARIO %s ===\n", nome_cenario);
@@ -508,6 +768,12 @@ void executar_teste(Problema *problema, const char *nome_cenario, Metricas *metr
     exibir_metricas(problema);
 }
 
+/**
+ * @brief Executa todos os cenários disponíveis.
+ *
+ * Roda os cenários pequeno, médio e grande,
+ * coleta as métricas e gera o arquivo CSV.
+ */
 void executar_todos_testes()
 {
     Problema problema_pequeno, problema_medio, problema_grande;
@@ -534,19 +800,12 @@ void executar_todos_testes()
     liberar_problema(&problema_grande);
 }
 
-// void exibir_menu()
-// {
-//     printf("\n=== PROBLEMA DA COBERTURA DE PONTOS COM INTERVALOS ===\n");
-//     printf("ALGORITMO: GULOSO\n");
-//     printf("\nMenu de opcoes:\n");
-//     printf("1. Executar cenario PEQUENO (20 pontos, 15 intervalos)\n");
-//     printf("2. Executar cenario MEDIO (100 pontos, 50 intervalos)\n");
-//     printf("3. Executar cenario GRANDE (500 pontos, 200 intervalos)\n");
-//     printf("4. Executar TODOS os cenarios e gerar CSV\n");
-//     printf("5. Sair\n");
-//     printf("\nEscolha uma opcao: ");
-// }
-
+/**
+ * @brief Exibe o menu do algoritmo guloso.
+ *
+ * Permite ao usuário selecionar cenários,
+ * executar todos os testes ou encerrar o programa.
+ */
 void exibir_menu() {
     printf("\n=== PROBLEMA DA COBERTURA DE PONTOS COM INTERVALOS ===\n");
     printf("ALGORITMO: GULOSO\n");
@@ -559,6 +818,14 @@ void exibir_menu() {
     printf("\nEscolha uma opcao: ");
 }
 
+/**
+ * @brief Função principal do programa.
+ *
+ * Controla o fluxo de execução do sistema,
+ * exibindo o menu e processando as escolhas do usuário.
+ *
+ * @return Código de encerramento do programa
+ */
 int main()
 {
     int opcao = 0;

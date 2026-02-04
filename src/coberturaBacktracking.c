@@ -10,45 +10,108 @@
 #define MAX_INTERVALOS 1000
 #define MAX_PATH 1024
 
+/**
+ * @brief Representa um intervalo numérico fechado.
+ *
+ * Esta estrutura define um intervalo contínuo na linha dos números inteiros,
+ * indo do valor `inicio` até o valor `fim`. No contexto do problema de
+ * cobertura de pontos, um intervalo é usado para verificar quais pontos
+ * estão contidos dentro de seus limites.
+ *
+ * Um ponto é considerado coberto se sua posição satisfaz:
+ * inicio ≤ posição ≤ fim.
+ */
 typedef struct
 {
-    int inicio;
-    int fim;
+    int inicio;  /**< Limite inferior (início) do intervalo */
+    int fim; /**< Limite superior (fim) do intervalo */
 } Intervalo;
 
+/**
+ * @brief Representa um ponto em uma linha numérica.
+ *
+ * Esta estrutura modela um ponto identificado por um `id` e associado
+ * a uma posição inteira na linha dos números. No problema de cobertura
+ * de pontos, cada ponto deve ser coberto por pelo menos um intervalo.
+ *
+ * Um ponto é considerado coberto quando sua posição está dentro dos
+ * limites de algum intervalo selecionado.
+ */
 typedef struct
 {
-    int id;
-    int posicao;
+    int id; /**< Identificador único do ponto (usado para exibição e controle) */
+    int posicao; /**< Posição do ponto na linha numérica */
 } Ponto;
 
+/**
+ * @brief Estrutura principal do problema de cobertura de pontos usando backtracking.
+ *
+ * Esta estrutura centraliza todos os dados necessários para a execução
+ * do algoritmo de backtracking, incluindo:
+ * - os pontos que devem ser cobertos;
+ * - os intervalos disponíveis para cobertura;
+ * - a solução em construção (parcial);
+ * - a melhor solução encontrada até o momento;
+ * - métricas de desempenho e qualidade.
+ *
+ * Ela permite organizar o estado do problema durante a busca na árvore
+ * de soluções, facilitando a aplicação de podas e a coleta de métricas.
+ */
 typedef struct
 {
-    Intervalo *intervalos;
-    int n_intervalos;
-    Ponto *pontos;
-    int n_pontos;
-    int *pontos_cobertos;
-    int n_pontos_cobertos;
-    Intervalo *solucao_atual;
-    int n_solucao_atual;
-    Intervalo *melhor_solucao;
-    int n_melhor_solucao;
-    double tempo_execucao;
-    long memoria_utilizada;
-    double qualidade;
-    int nos_visitados;
+    Intervalo *intervalos; /**< Vetor com todos os intervalos disponíveis */
+    int n_intervalos; /**< Quantidade total de intervalos */
+    Ponto *pontos;  /**< Vetor com os pontos que devem ser cobertos */
+    int n_pontos;  /**< Quantidade total de pontos */
+    int *pontos_cobertos; /**< Vetor auxiliar para marcar pontos já cobertos */
+    int n_pontos_cobertos; /**< Quantidade de pontos atualmente cobertos */
+    Intervalo *solucao_atual; /**< Conjunto de intervalos da solução parcial */
+    int n_solucao_atual;  /**< Tamanho da solução parcial atual */
+    Intervalo *melhor_solucao; /**< Melhor solução completa encontrada */
+    int n_melhor_solucao; /**< Quantidade de intervalos da melhor solução */
+    double tempo_execucao;  /**< Tempo total de execução do algoritmo (em ms) */
+    long memoria_utilizada; /**< Memória máxima utilizada pelo processo (em KB) */
+    double qualidade;  /**< Qualidade da solução encontrada */
+    int nos_visitados; /**< Número de nós visitados na árvore de busca */
 } ProblemaBacktracking;
 
+/**
+ * @brief Estrutura que armazena as métricas de desempenho do algoritmo de backtracking.
+ *
+ * Esta estrutura é utilizada para registrar e transportar os resultados
+ * da execução do algoritmo, permitindo analisar seu desempenho em
+ * diferentes cenários de teste (pequeno, médio e grande).
+ *
+ * As métricas incluem tempo de execução, uso de memória, qualidade da
+ * solução encontrada e o esforço computacional medido pelo número de
+ * nós visitados.
+ */
 typedef struct
 {
-    double tempo;
-    long memoria;
-    double qualidade;
-    int n_solucao;
-    int nos_visitados;
+    double tempo; /**< Tempo total de execução do algoritmo (em milissegundos) */
+    long memoria; /**< Memória máxima utilizada durante a execução (em KB) */
+    double qualidade;  /**< Qualidade da solução (1 - intervalos_usados / intervalos_totais) */
+    int n_solucao;  /**< Número de intervalos da solução final encontrada */
+    int nos_visitados; /**< Quantidade de nós visitados na árvore de busca */
 } MetricasBacktracking;
 
+/**
+ * @brief Inicializa a estrutura do problema de backtracking.
+ *
+ * Esta função prepara a estrutura `ProblemaBacktracking` para uso,
+ * garantindo que todos os ponteiros estejam nulos e que os contadores
+ * e métricas iniciem com valores seguros.
+ *
+ * Em especial, o campo `n_melhor_solucao` é inicializado com `INT_MAX`
+ * para permitir que qualquer solução válida encontrada seja considerada
+ * melhor na primeira comparação.
+ *
+ * Essa inicialização é essencial antes de configurar cenários ou
+ * executar o algoritmo de backtracking, evitando erros de memória
+ * e comportamentos indefinidos.
+ *
+ * @param problema Ponteiro para a estrutura do problema a ser inicializada.
+ */
 void inicializar_problema_backtracking(ProblemaBacktracking *problema)
 {
     problema->intervalos = NULL;
@@ -67,6 +130,21 @@ void inicializar_problema_backtracking(ProblemaBacktracking *problema)
     problema->nos_visitados = 0;
 }
 
+/**
+ * @brief Libera toda a memória alocada dinamicamente no problema de backtracking.
+ *
+ * Esta função é responsável por desalocar corretamente todos os vetores
+ * alocados dinamicamente dentro da estrutura `ProblemaBacktracking`.
+ * Após a liberação, os ponteiros são ajustados para `NULL`, evitando
+ * acessos inválidos e possíveis erros de dupla liberação.
+ *
+ * Essa função deve ser chamada ao final da execução de cada cenário
+ * ou quando o problema não for mais utilizado, garantindo boas
+ * práticas de gerenciamento de memória em C.
+ *
+ * @param problema Ponteiro para a estrutura do problema cujos recursos
+ *                 alocados devem ser liberados.
+ */
 void liberar_problema_backtracking(ProblemaBacktracking *problema)
 {
     if (problema->intervalos != NULL)
@@ -94,8 +172,28 @@ void liberar_problema_backtracking(ProblemaBacktracking *problema)
         free(problema->melhor_solucao);
         problema->melhor_solucao = NULL;
     }
-}
+} 
 
+/**
+ * @brief Função de comparação de intervalos para ordenação.
+ *
+ * Esta função é utilizada pelo `qsort` para ordenar os intervalos
+ * antes da execução do algoritmo de backtracking.
+ *
+ * O critério de ordenação é:
+ * 1. Intervalos maiores vêm primeiro (ordem decrescente de tamanho);
+ * 2. Em caso de empate, o intervalo com menor valor de início vem primeiro.
+ *
+ * A ordenação por tamanho é uma heurística importante, pois intervalos
+ * maiores tendem a cobrir mais pontos, o que pode reduzir a profundidade
+ * da árvore de busca e melhorar a eficiência das podas no backtracking.
+ *
+ * @param a Ponteiro genérico para o primeiro intervalo.
+ * @param b Ponteiro genérico para o segundo intervalo.
+ * @return Valor negativo se `a` deve vir antes de `b`,
+ *         valor positivo se `a` deve vir depois de `b`,
+ *         ou zero se ambos forem considerados equivalentes.
+ */
 int comparar_intervalos_backtracking(const void *a, const void *b)
 {
     int resultado = 0;
@@ -132,6 +230,22 @@ int comparar_intervalos_backtracking(const void *a, const void *b)
     return resultado;
 }
 
+/**
+ * @brief Função de comparação de pontos para ordenação.
+ *
+ * Esta função é utilizada pelo `qsort` para ordenar os pontos
+ * em ordem crescente de posição na linha numérica.
+ *
+ * A ordenação dos pontos facilita operações de verificação
+ * de cobertura e análise dos resultados, tornando o
+ * comportamento do algoritmo mais previsível e organizado.
+ *
+ * @param a Ponteiro genérico para o primeiro ponto.
+ * @param b Ponteiro genérico para o segundo ponto.
+ * @return Valor negativo se `a` deve vir antes de `b`,
+ *         valor positivo se `a` deve vir depois de `b`,
+ *         ou zero se ambos tiverem a mesma posição.
+ */
 int comparar_pontos_backtracking(const void *a, const void *b)
 {
     int resultado = 0;
@@ -154,7 +268,27 @@ int comparar_pontos_backtracking(const void *a, const void *b)
     return resultado;
 }
 
-// Cenário PEQUENO - Determinístico
+/**
+ * @brief Configura o cenário pequeno para o algoritmo de backtracking.
+ *
+ * Este cenário é determinístico e foi projetado para testes iniciais
+ * e validação do funcionamento do algoritmo.
+ *
+ * Ele contém:
+ * - 8 pontos fixos, distribuídos ao longo da linha numérica;
+ * - 10 intervalos fixos, construídos de forma a garantir que todos
+ *   os pontos possam ser cobertos.
+ *
+ * Por ser um cenário de tamanho reduzido, ele permite observar
+ * com clareza o comportamento do backtracking, as decisões de poda
+ * e a formação da solução ótima.
+ *
+ * Ao final da configuração, os intervalos são ordenados por tamanho
+ * (do maior para o menor), utilizando uma heurística que tende a
+ * melhorar o desempenho do algoritmo.
+ *
+ * @param problema Ponteiro para a estrutura do problema a ser configurada.
+ */
 void configurar_cenario_pequeno_backtracking(ProblemaBacktracking* problema) {
     // 8 pontos fixos
     problema->n_pontos = 8;
@@ -185,7 +319,27 @@ void configurar_cenario_pequeno_backtracking(ProblemaBacktracking* problema) {
     qsort(problema->intervalos, problema->n_intervalos, sizeof(Intervalo), comparar_intervalos_backtracking);
 }
 
-// Cenário MÉDIO - Determinístico
+/**
+ * @brief Configura o cenário médio para o algoritmo de backtracking.
+ *
+ * Este cenário é determinístico e representa um nível intermediário
+ * de complexidade em relação ao cenário pequeno.
+ *
+ * Ele contém:
+ * - 10 pontos fixos, distribuídos de forma uniforme na linha numérica;
+ * - 12 intervalos fixos, projetados para garantir a cobertura de todos
+ *   os pontos.
+ *
+ * O cenário médio permite avaliar o impacto do aumento do espaço de
+ * busca no desempenho do algoritmo, especialmente no número de nós
+ * visitados e no tempo de execução.
+ *
+ * Assim como nos demais cenários, os intervalos são ordenados por
+ * tamanho (ordem decrescente), utilizando uma heurística que tende a
+ * melhorar a eficiência das podas no backtracking.
+ *
+ * @param problema Ponteiro para a estrutura do problema a ser configurada.
+ */
 void configurar_cenario_medio_backtracking(ProblemaBacktracking* problema) {
     // 10 pontos fixos
     problema->n_pontos = 10;
@@ -220,7 +374,24 @@ void configurar_cenario_medio_backtracking(ProblemaBacktracking* problema) {
     qsort(problema->intervalos, problema->n_intervalos, sizeof(Intervalo), comparar_intervalos_backtracking);
 }
 
-// Cenário GRANDE - Determinístico
+/**
+ * @brief Configura um cenário grande para o problema de cobertura de pontos usando backtracking.
+ *
+ * Este cenário é utilizado para testar o algoritmo em uma instância
+ * de maior complexidade, com mais pontos e intervalos, aumentando
+ * o espaço de busca explorado pelo backtracking.
+ *
+ * O cenário contém:
+ * - 12 pontos fixos distribuídos ao longo do eixo numérico
+ * - 15 intervalos fixos, todos capazes de cobrir os pontos
+ *
+ * Ao final da configuração, os intervalos são ordenados em ordem
+ * decrescente de tamanho (e critério secundário de início),
+ * o que pode ajudar a reduzir a profundidade da busca ao priorizar
+ * intervalos mais abrangentes.
+ *
+ * @param problema Ponteiro para a estrutura do problema de backtracking
+ */
 void configurar_cenario_grande_backtracking(ProblemaBacktracking* problema) {
     // 12 pontos fixos
     problema->n_pontos = 12;
@@ -260,6 +431,21 @@ void configurar_cenario_grande_backtracking(ProblemaBacktracking* problema) {
     qsort(problema->intervalos, problema->n_intervalos, sizeof(Intervalo), comparar_intervalos_backtracking);
 }
 
+/**
+ * @brief Verifica se um ponto é coberto por um intervalo.
+ *
+ * Esta função testa se a posição de um ponto está contida
+ * dentro dos limites de um intervalo fechado [início, fim].
+ *
+ * Ela é utilizada como operação básica do algoritmo de
+ * backtracking para decidir se um ponto já foi coberto
+ * por um determinado intervalo escolhido na solução.
+ *
+ * @param ponto Estrutura que representa o ponto a ser verificado.
+ * @param intervalo Estrutura que representa o intervalo considerado.
+ * @return 1 se o ponto estiver dentro do intervalo (coberto),
+ *         ou 0 caso contrário.
+ */
 int ponto_coberto_por_intervalo_backtracking(Ponto ponto, Intervalo intervalo)
 {
     int resultado = 0;
@@ -274,6 +460,25 @@ int ponto_coberto_por_intervalo_backtracking(Ponto ponto, Intervalo intervalo)
     return resultado;
 }
 
+/**
+ * @brief Verifica se a solução parcial atual cobre todos os pontos do problema.
+ *
+ * Esta função analisa os intervalos presentes na solução parcial
+ * (`solucao_atual`) e verifica se, juntos, eles cobrem todos os
+ * pontos definidos no problema.
+ *
+ * Para isso, é criado um vetor auxiliar de cobertura, onde cada
+ * posição indica se um ponto já foi coberto (1) ou não (0).
+ * Esse vetor é utilizado apenas temporariamente durante a verificação.
+ *
+ * A função é usada pelo algoritmo de backtracking para decidir
+ * se uma solução parcial já é válida (cobre todos os pontos)
+ * ou se ainda é necessário adicionar mais intervalos.
+ *
+ * @param problema Ponteiro para a estrutura que representa o problema.
+ * @return 1 se todos os pontos estiverem cobertos pela solução atual,
+ *         ou 0 caso contrário.
+ */
 int verificar_cobertura_parcial(ProblemaBacktracking *problema)
 {
     int resultado = 0;
@@ -317,6 +522,23 @@ int verificar_cobertura_parcial(ProblemaBacktracking *problema)
     return resultado;
 }
 
+/**
+ * @brief Copia a solução atual para a melhor solução encontrada.
+ *
+ * Esta função é chamada quando o algoritmo de backtracking
+ * encontra uma solução válida melhor do que a melhor solução
+ * armazenada até o momento.
+ *
+ * Ela realiza uma cópia dos intervalos da solução atual
+ * (`solucao_atual`) para o vetor `melhor_solucao`, garantindo
+ * que a melhor combinação de intervalos seja preservada
+ * mesmo após o retorno das chamadas recursivas.
+ *
+ * A memória para a melhor solução é alocada apenas uma vez,
+ * na primeira vez em que uma solução válida é encontrada.
+ *
+ * @param problema Ponteiro para a estrutura que representa o problema.
+ */
 void copiar_solucao(ProblemaBacktracking *problema)
 {
     if (problema->melhor_solucao == NULL)
@@ -334,49 +556,129 @@ void copiar_solucao(ProblemaBacktracking *problema)
     }
 }
 
+/**
+ * @brief Função recursiva principal do algoritmo de backtracking.
+ *
+ * Esta função explora o espaço de soluções do problema de cobertura
+ * de pontos, decidindo recursivamente se cada intervalo será
+ * incluído ou não na solução atual.
+ *
+ * A cada chamada, o algoritmo:
+ * - conta um novo nó visitado (métrica de complexidade);
+ * - verifica condições de parada;
+ * - aplica critérios de poda para reduzir o espaço de busca;
+ * - testa se a solução parcial cobre todos os pontos;
+ * - atualiza a melhor solução encontrada.
+ *
+ * @param problema Ponteiro para a estrutura que representa o problema.
+ * @param indice_intervalo Índice do intervalo atualmente considerado.
+ */
 void backtracking_recursivo(ProblemaBacktracking *problema, int indice_intervalo)
-{
+{   
+    /**
+     * Incrementa o contador de nós visitados.
+     * Essa métrica indica quantos estados da árvore de busca
+     * foram efetivamente explorados pelo algoritmo.
+     */
     problema->nos_visitados++;
 
+    /**
+     * Condição de parada:
+     * se todos os intervalos já foram considerados,
+     * não há mais decisões a serem tomadas.
+     */
     if (indice_intervalo >= problema->n_intervalos)
     {
         return;
     }
 
+    /**
+     * Poda baseada na melhor solução encontrada até o momento.
+     * Se a solução atual já é maior ou igual à melhor solução,
+     * não faz sentido continuar explorando esse ramo.
+     */
     if (problema->n_solucao_atual >= problema->n_melhor_solucao)
     {
         return;
     }
 
+    /**
+     * Verifica se a próxima escolha já torna impossível
+     * melhorar a melhor solução atual.
+     */
     int pode_podar = 0;
     if (problema->n_solucao_atual + 1 >= problema->n_melhor_solucao)
     {
         pode_podar = 1;
     }
 
+    /**
+     * Caso não seja possível podar, tenta incluir o intervalo atual
+     * na solução.
+     */
     if (pode_podar == 0)
-    {
+    {   
+        /**
+         * Inclui o intervalo atual na solução parcial.
+         */
         problema->solucao_atual[problema->n_solucao_atual] = problema->intervalos[indice_intervalo];
         problema->n_solucao_atual++;
 
+        /**
+         * Verifica se a solução parcial já cobre todos os pontos.
+         */
         if (verificar_cobertura_parcial(problema))
-        {
+        {   
+            /**
+             * Caso a solução seja válida e melhor que a anterior,
+             * ela passa a ser a melhor solução encontrada.
+             */
             if (problema->n_solucao_atual < problema->n_melhor_solucao)
             {
                 copiar_solucao(problema);
             }
         }
         else
-        {
+        {   
+            /**
+             * Caso ainda não cubra todos os pontos, continua a busca
+             * considerando o próximo intervalo.
+             */
             backtracking_recursivo(problema, indice_intervalo + 1);
         }
 
+        /**
+         * Remove o intervalo atual da solução (backtrack),
+         * restaurando o estado anterior antes de testar
+         * a próxima possibilidade.
+         */
         problema->n_solucao_atual--;
     }
 
+    /**
+     * Explora o ramo onde o intervalo atual NÃO é incluído
+     * na solução.
+     */
     backtracking_recursivo(problema, indice_intervalo + 1);
 }
 
+/**
+ * @brief Resolve o problema de cobertura de pontos utilizando backtracking.
+ *
+ * Esta função é responsável por:
+ * - inicializar estruturas auxiliares do algoritmo;
+ * - executar o algoritmo de backtracking recursivo;
+ * - medir tempo de execução e uso de memória;
+ * - calcular a qualidade da solução encontrada;
+ * - retornar todas essas informações na forma de métricas.
+ *
+ * Ela funciona como a função principal do algoritmo de backtracking,
+ * encapsulando a execução e a avaliação da solução.
+ *
+ * @param problema Ponteiro para a estrutura que representa o problema.
+ * @return Estrutura contendo as métricas de desempenho e qualidade
+ *         da solução encontrada.
+ */
 MetricasBacktracking resolver_backtracking(ProblemaBacktracking *problema)
 {
     MetricasBacktracking metricas;
@@ -434,6 +736,20 @@ MetricasBacktracking resolver_backtracking(ProblemaBacktracking *problema)
     return metricas;
 }
 
+/**
+ * @brief Exibe a melhor solução encontrada pelo algoritmo de backtracking.
+ *
+ * Esta função imprime:
+ * - os intervalos que compõem a melhor solução encontrada;
+ * - a quantidade total de intervalos utilizados;
+ * - os pontos efetivamente cobertos por essa solução.
+ *
+ * Além de apresentar o resultado final, a função também
+ * realiza uma verificação explícita de cobertura dos pontos,
+ * tornando a saída mais didática e fácil de interpretar.
+ *
+ * @param problema Ponteiro para a estrutura que representa o problema.
+ */
 void exibir_solucao_backtracking(ProblemaBacktracking *problema)
 {
     int *pontos_cobertos = NULL;
@@ -484,6 +800,23 @@ void exibir_solucao_backtracking(ProblemaBacktracking *problema)
     }
 }
 
+/**
+ * @brief Exibe as métricas de desempenho do algoritmo de backtracking.
+ *
+ * Esta função imprime, de forma organizada, as principais métricas
+ * coletadas durante a execução do algoritmo, permitindo avaliar
+ * tanto o desempenho computacional quanto a qualidade da solução.
+ *
+ * As métricas apresentadas incluem:
+ * - tempo total de execução;
+ * - uso máximo de memória;
+ * - número de intervalos da melhor solução encontrada;
+ * - qualidade da solução;
+ * - número de nós visitados na árvore de busca.
+ *
+ * @param problema Ponteiro para a estrutura que contém os dados
+ *        e métricas do problema de backtracking.
+ */
 void exibir_metricas_backtracking(ProblemaBacktracking *problema)
 {
     printf("\n=== METRICAS DO ALGORITMO BACKTRACKING ===\n");
@@ -495,6 +828,25 @@ void exibir_metricas_backtracking(ProblemaBacktracking *problema)
     printf("=========================================\n\n");
 }
 
+/**
+ * @brief Salva em arquivo CSV as métricas do algoritmo de backtracking.
+ *
+ * Esta função cria um arquivo CSV contendo as métricas coletadas
+ * durante a execução do algoritmo de backtracking para três cenários
+ * distintos: pequeno, médio e grande.
+ *
+ * O arquivo gerado pode ser utilizado posteriormente para:
+ * - análise comparativa de desempenho;
+ * - geração de gráficos;
+ * - inclusão direta em relatórios acadêmicos.
+ *
+ * O formato do arquivo CSV é:
+ * cenario, tempo_ms, memoria_kb, qualidade, n_intervalos_solucao, nos_visitados
+ *
+ * @param metricas_pequeno Ponteiro para as métricas do cenário pequeno.
+ * @param metricas_medio   Ponteiro para as métricas do cenário médio.
+ * @param metricas_grande  Ponteiro para as métricas do cenário grande.
+ */
 void salvar_csv_backtracking(MetricasBacktracking *metricas_pequeno, MetricasBacktracking *metricas_medio, MetricasBacktracking *metricas_grande)
 {
     FILE *arquivo = NULL;
@@ -525,6 +877,23 @@ void salvar_csv_backtracking(MetricasBacktracking *metricas_pequeno, MetricasBac
     }
 }
 
+/**
+ * @brief Executa um teste completo do algoritmo de backtracking para um cenário específico.
+ *
+ * Esta função organiza o fluxo de execução de um cenário de teste:
+ * - Exibe informações iniciais do cenário (nome, quantidade de pontos e intervalos);
+ * - Executa o algoritmo de backtracking;
+ * - Armazena as métricas retornadas pela execução;
+ * - Exibe a melhor solução encontrada;
+ * - Exibe as métricas de desempenho do algoritmo.
+ *
+ * É uma função de alto nível, criada para fins experimentais e didáticos,
+ * facilitando a comparação entre diferentes cenários de entrada.
+ *
+ * @param problema Ponteiro para a estrutura do problema de backtracking a ser resolvido.
+ * @param nome_cenario String identificadora do cenário (ex.: "pequeno", "medio", "grande").
+ * @param metricas Ponteiro para a estrutura onde as métricas da execução serão armazenadas.
+ */
 void executar_teste_backtracking(ProblemaBacktracking *problema, const char *nome_cenario, MetricasBacktracking *metricas)
 {
     printf("\n=== EXECUTANDO CENARIO %s ===\n", nome_cenario);
@@ -536,6 +905,27 @@ void executar_teste_backtracking(ProblemaBacktracking *problema, const char *nom
     exibir_metricas_backtracking(problema);
 }
 
+/**
+ * @brief Executa todos os cenários de teste do algoritmo de backtracking.
+ *
+ * Esta função coordena a execução completa dos experimentos do algoritmo
+ * de backtracking, contemplando três cenários distintos:
+ * - Pequeno
+ * - Médio
+ * - Grande
+ *
+ * O fluxo executado é:
+ * - Inicialização das estruturas do problema;
+ * - Configuração específica de cada cenário;
+ * - Execução do algoritmo de backtracking para cada cenário;
+ * - Exibição das soluções e métricas obtidas;
+ * - Salvamento das métricas em arquivo CSV para análise posterior;
+ * - Liberação de toda a memória alocada.
+ *
+ * A função foi projetada com foco didático e experimental, permitindo
+ * a comparação do comportamento do algoritmo em diferentes escalas
+ * de entrada.
+ */
 void executar_todos_testes_backtracking()
 {
     ProblemaBacktracking problema_pequeno, problema_medio, problema_grande;
@@ -562,6 +952,23 @@ void executar_todos_testes_backtracking()
     liberar_problema_backtracking(&problema_grande);
 }
 
+/**
+ * @brief Exibe o menu interativo do algoritmo de backtracking.
+ *
+ * Esta função apresenta no terminal um menu de opções que permite
+ * ao usuário selecionar qual cenário do Problema da Cobertura de Pontos
+ * com Intervalos será executado utilizando o algoritmo de backtracking.
+ *
+ * As opções disponíveis incluem:
+ * - Execução individual dos cenários pequeno, médio ou grande;
+ * - Execução de todos os cenários em sequência, com geração de arquivo CSV
+ *   contendo as métricas coletadas;
+ * - Encerramento do programa.
+ *
+ * A função não realiza leitura de entrada nem processamento lógico,
+ * sendo responsável exclusivamente pela exibição textual do menu.
+ */
+
 void exibir_menu_backtracking() {
     printf("\n=== PROBLEMA DA COBERTURA DE PONTOS COM INTERVALOS ===\n");
     printf("ALGORITMO: BACKTRACKING\n");
@@ -574,6 +981,27 @@ void exibir_menu_backtracking() {
     printf("\nEscolha uma opcao: ");
 }
 
+/**
+ * @brief Função principal do programa.
+ *
+ * Controla a execução do Problema da Cobertura de Pontos com Intervalos
+ * utilizando o algoritmo de backtracking por meio de um menu interativo.
+ *
+ * A função apresenta ao usuário opções para:
+ * - Executar individualmente os cenários pequeno, médio ou grande;
+ * - Executar todos os cenários em sequência e gerar um arquivo CSV com métricas;
+ * - Encerrar a execução do programa.
+ *
+ * O fluxo principal consiste em:
+ * - Exibir o menu de opções;
+ * - Ler e validar a entrada do usuário;
+ * - Inicializar, configurar, executar e liberar os recursos do problema
+ *   conforme o cenário selecionado.
+ *
+ * A execução continua em loop até que o usuário escolha a opção de saída.
+ *
+ * @return Retorna 0 após o encerramento normal do programa.
+ */
 int main()
 {
     int opcao = 0;
