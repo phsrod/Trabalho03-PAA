@@ -15,8 +15,8 @@
 | Nome | Responsabilidade |
 |------|------------------|
 | Tiago Lima de Moura | Implementação / Análise    |
-| [Pedro Henrique Silva Rodrigues] | Implementação / Análise |
-| [Luciano Sousa Barbosa] | Implementação / Análise |
+| Pedro Henrique Silva Rodrigues | Implementação / Análise |
+| Luciano Sousa Barbosa | Implementação / Análise |
 
 > Todos os integrantes devem participar da apresentação e do desenvolvimento do código.
 
@@ -194,7 +194,7 @@ x -> para marcar
 - [x] Organização do código em pastas e arquivos coerentes.
 - [x] Implementação do Algoritmo Guloso (estratégia de escolha local).
 - [x] Implementação do Algoritmo de Backtracking (tentativa e erro).
-- [ ] Garantia de legibilidade e instruções claras para execução.
+- [x] Garantia de legibilidade e instruções claras para execução.
 
 ### 🧪 Testes e Medições
 - [x] Definição de um conjunto de testes comum para ambas as versões.
@@ -214,9 +214,9 @@ x -> para marcar
 ### 📝 Apresentação e Entrega
 - [x] Elaboração de slides com a explicação do problema e abordagens.
 - [x] Inclusão dos resultados experimentais (tabelas e gráficos) nos slides.
-- [ ] Preparação da demonstração obrigatória com exemplos pequenos (vale 3 pontos).
-- [ ] Revisão do conteúdo para garantir clareza e profundidade.
-- [ ] Divisão equilibrada da fala entre todos os integrantes.
+- [x] Preparação da demonstração obrigatória com exemplos pequenos (vale 3 pontos).
+- [x] Revisão do conteúdo para garantir clareza e profundidade.
+- [x] Divisão equilibrada da fala entre todos os integrantes.
 
 ---
 
