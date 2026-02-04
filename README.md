@@ -192,28 +192,28 @@ x -> para marcar
 ### 🔧 Implementação
 - [x] Escolha da linguagem de programação única para ambas as versões.
 - [x] Organização do código em pastas e arquivos coerentes.
-- [ ] Implementação do Algoritmo Guloso (estratégia de escolha local).
-- [ ] Implementação do Algoritmo de Backtracking (tentativa e erro).
+- [x] Implementação do Algoritmo Guloso (estratégia de escolha local).
+- [x] Implementação do Algoritmo de Backtracking (tentativa e erro).
 - [ ] Garantia de legibilidade e instruções claras para execução.
 
 ### 🧪 Testes e Medições
-- [ ] Definição de um conjunto de testes comum para ambas as versões.
-- [ ] Medição do tempo de execução para diferentes tamanhos de entrada.
-- [ ] Medição do consumo de memória para diferentes tamanhos de entrada.
-- [ ] Coleta de dados sobre a qualidade da solução (valor ótimo vs. aproximado).
-- [ ] Justificativa para possíveis limitações de testes no backtracking em entradas grandes.
+- [x] Definição de um conjunto de testes comum para ambas as versões.
+- [x] Medição do tempo de execução para diferentes tamanhos de entrada.
+- [x] Medição do consumo de memória para diferentes tamanhos de entrada.
+- [x] Coleta de dados sobre a qualidade da solução (valor ótimo vs. aproximado).
+- [x] Justificativa para possíveis limitações de testes no backtracking em entradas grandes.
 
 ### 📊 Análise e Documentação
-- [ ] Criação de tabelas comparativas (Tempo, Memória e Qualidade).
-- [ ] Geração de gráficos: Tempo x Tamanho da Entrada.
-- [ ] Geração de gráficos: Memória x Tamanho da Entrada.
-- [ ] Geração de gráficos: Qualidade da Solução x Tamanho da Entrada.
-- [ ] Análise crítica: A solução gulosa é ótima ou apenas boa?.
-- [ ] Análise crítica: O backtracking encontra a solução ótima?.
+- [x] Criação de tabelas comparativas (Tempo, Memória e Qualidade).
+- [x] Geração de gráficos: Tempo x Tamanho da Entrada.
+- [x] Geração de gráficos: Memória x Tamanho da Entrada.
+- [x] Geração de gráficos: Qualidade da Solução x Tamanho da Entrada.
+- [x] Análise crítica: A solução gulosa é ótima ou apenas boa?.
+- [x] Análise crítica: O backtracking encontra a solução ótima?.
 
 ### 📝 Apresentação e Entrega
-- [ ] Elaboração de slides com a explicação do problema e abordagens.
-- [ ] Inclusão dos resultados experimentais (tabelas e gráficos) nos slides.
+- [x] Elaboração de slides com a explicação do problema e abordagens.
+- [x] Inclusão dos resultados experimentais (tabelas e gráficos) nos slides.
 - [ ] Preparação da demonstração obrigatória com exemplos pequenos (vale 3 pontos).
 - [ ] Revisão do conteúdo para garantir clareza e profundidade.
 - [ ] Divisão equilibrada da fala entre todos os integrantes.
@@ -243,4 +243,4 @@ A nota total de 10 pontos será distribuída da seguinte forma :
 
 ---
 
-**📌 Última atualização:** 30/01/2026
+**📌 Última atualização:** 04/02/2026
