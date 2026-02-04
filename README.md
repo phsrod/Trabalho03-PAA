@@ -32,7 +32,69 @@ Comparar as estratégias de projeto de algoritmos **Gulosa** e **Tentativa e Err
 ---
 
 ## 🚀 Como Rodar os Testes
- A fazer
+
+### 📋 Pré-requisitos
+* **WSL2** configurado no Windows
+* **Ubuntu 24.04.3 LTS** (ou similar) instalado no WSL
+* **Compilador GCC** instalado no sistema
+* **Valgrind** para medição de memória (Linux/WSL)
+
+### 🔨 Compilação
+
+No terminal WSL, navegue até a pasta raiz do projeto e compile os códigos:
+
+```bash
+# Compilar o algoritmo Backtracking
+gcc src/coberturaBacktracking.c -o cb -lm
+
+# Compilar o algoritmo Guloso
+gcc src/coberturaGuloso.c -o cg -lm
+```
+
+### ▶️ Execução dos Testes
+
+**Executar Backtracking:**
+```bash
+./cb
+```
+
+**Executar Guloso:**
+```bash
+./cg
+```
+
+Após iniciar, escolha uma das opções do menu:
+* **1, 2 ou 3:** Executa um cenário específico (Pequeno, Médio ou Grande)
+* **4:** Executa TODOS os cenários e gera o arquivo CSV com métricas
+* **5:** Sair
+
+### 📊 Medição de Memória com Valgrind
+
+Para obter dados precisos de consumo de memória, execute com valgrind:
+
+```bash
+# Backtracking
+valgrind --leak-check=full ./cb
+
+# Guloso
+valgrind --leak-check=full ./cg
+```
+
+**Dica:** Procure pela linha `total heap usage` na saída do valgrind para ver a quantidade de bytes alocados.
+
+### 📁 Arquivos de Saída
+
+Os resultados são salvos automaticamente em:
+* `results/backtracking/file/metricas_backtracking.csv`
+* `results/guloso/file/metricas_guloso.csv`
+
+Cada CSV contém as colunas:
+* **cenario:** nome do cenário (pequeno, medio, grande)
+* **tempo_ms:** tempo de execução em milissegundos
+* **memoria_kb:** uso de memória (use valgrind para preencher)
+* **qualidade:** métrica de qualidade da solução (1 - n_solucao/n_intervalos)
+* **n_intervalos_solucao:** quantidade de intervalos usados
+* **nos_visitados:** *(apenas backtracking)* nós explorados na árvore de busca
 
 ---
 
@@ -52,8 +114,8 @@ Comparar as estratégias de projeto de algoritmos **Gulosa** e **Tentativa e Err
 | Item | Especificação |
 |------|---------------|
 | **Linguagem** | C  |
-| **Sistema Operacional** | Windows 11 (Executado no Ubuntu 24.04.3 LTS via WSL2) |
-| **Hardware** | Intel Core i5-12450H (12ª Gen, 8 núcleos, 12 threads, 2.00 GHz), 16 GB RAM |
+| **Sistema Operacional** | Windows 11 (Executado no Ubuntu 22.04.5 LTS via WSL2) |
+| **Hardware** | Intel Core i3-1215U (12ª Gen, 6 núcleos, 8 threads, 1.20 GHz), 8 GB RAM |
 | **Editor/IDE** | Visual Studio Code |
 
 ---
